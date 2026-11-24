@@ -93,12 +93,6 @@ Pressionar e soltar KEY0. Contar os pressionamentos de KEY1 a partir do reset, s
 
 Sem pressionar KEY1, os registradores mantêm seu estado. KEY0 não restaura a RAM; reprogramar a FPGA restaura o conteúdo inicial do MIF.
 
-## Simulação
-
-No ModelSim-Altera, abrir o Transcript na pasta `projeto/` e executar `do sim.do` (requer a biblioteca `altera_mf_ver`). A alternativa `do sim_comportamental.do` utiliza a RAM comportamental e `do sim_manual.do` verifica os pulsos da interface manual.
-
-Os resultados indicados são esperados pelo modelo de referência, não registros de compilação ou medição física. O esquemático e a síntese devem ser verificados no Quartus; o pacote não inclui um SOF pré-compilado. JNEG não é exercitada pelo programa obrigatório.
-
 ## Referências
 
 - [Prática — Processador de 16 bits](Pr%C3%A1tica.pdf), Prof. Dr. Emerson Carlos Pedrino, DC/UFSCar.
