@@ -1,0 +1,29 @@
+name: Validar UP3
+on:
+  push:
+    paths:
+      - 'projeto/**'
+      - '.github/workflows/validar-up3.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  testar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Conferir programa e mapa de tela
+        working-directory: projeto
+        run: python3 verificar_vga.py
+      - name: Testes comportamentais
+        working-directory: projeto
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq iverilog
+          for top in tb_scomp tb_manual tb_vga; do
+            iverilog -g2005-sv -DSIM_BEHAVIORAL -s "$top" -o "/tmp/$top" scomp.v memory256.v clock_control.v display_interface.v font8.v datapath_renderer.v "$top.v"
+            vvp -n "/tmp/$top" | tee "/tmp/$top.log"
+            grep -q '^PASS' "/tmp/$top.log"
+            ! grep -q '^FAIL' "/tmp/$top.log"
+          done
