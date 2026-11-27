@@ -1,0 +1,57 @@
+name: Importar projeto UP3 VGA
+on:
+  push:
+    paths:
+      - '.github/workflows/importar-up3.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  importar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Conferir e extrair o ZIP
+        run: |
+          set -euo pipefail
+          test "$(git hash-object UP3_DE1_VGA_Quartus13.zip)" = "2a00d88b2c707800b8d738be2648195d89e6c7ff"
+          python3 - <<'PY'
+          from pathlib import Path, PurePosixPath
+          import zipfile, shutil, stat
+          with zipfile.ZipFile('UP3_DE1_VGA_Quartus13.zip') as z:
+              items=[i for i in z.infolist() if not i.is_dir()]
+              assert len(items)==37
+              for i in items:
+                  p=PurePosixPath(i.filename)
+                  assert len(p.parts)==2 and p.parts[0]=='UP3_DE1_VGA' and p.name not in ('.','..')
+                  assert not stat.S_ISLNK(i.external_attr>>16)
+                  assert i.file_size<1000000
+              shutil.rmtree('projeto',ignore_errors=True)
+              Path('projeto').mkdir()
+              for i in items:
+                  Path('projeto',PurePosixPath(i.filename).name).write_bytes(z.read(i))
+              assert all(Path('projeto',PurePosixPath(i.filename).name).read_bytes()==z.read(i) for i in items)
+          print('37 arquivos conferidos byte a byte')
+          PY
+      - name: Verificar modelo de referencia
+        working-directory: projeto
+        run: python3 verificar_vga.py
+      - name: Publicar fontes correspondentes ao ZIP
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A -- projeto
+          git diff --cached --quiet || (git commit -m "Importa projeto UP3 com interface VGA" && git push origin HEAD:main)
+      - name: Testes comportamentais da CPU e do desenho
+        working-directory: projeto
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq iverilog
+          for top in tb_scomp tb_manual tb_vga; do
+            iverilog -g2005-sv -DSIM_BEHAVIORAL -s "$top" -o "/tmp/$top" scomp.v memory256.v clock_control.v display_interface.v font8.v datapath_renderer.v "$top.v"
+            vvp -n "/tmp/$top" | tee "/tmp/$top.log"
+            grep -q '^PASS:' "/tmp/$top.log"
+            ! grep -q '^FAIL' "/tmp/$top.log"
+          done
