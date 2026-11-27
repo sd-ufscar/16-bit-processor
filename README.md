@@ -4,8 +4,6 @@ Projeto de Sistemas Digitais — Engenharia de Computação, UFSCar (2026). O pr
 
 ## Organização do projeto
 
-Os 37 arquivos do pacote [UP3_DE1_VGA_Quartus13.zip](UP3_DE1_VGA_Quartus13.zip) estão disponíveis individualmente em [projeto/](projeto/), com conteúdo original preservado.
-
 | Arquivo | Função |
 |---|---|
 | [de1_top.qpf](projeto/de1_top.qpf) | Projeto do Quartus |
