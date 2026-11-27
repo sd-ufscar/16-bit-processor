@@ -6,12 +6,14 @@ module scomp (
     output reg [15:0] ac, ir,
     output reg [7:0] pc,
     output reg [7:0] mar,
-    output wire mw, mem_enable
+    output wire mw, mem_enable,
+    output wire [3:0] state_out
 );
     localparam RESET_PC=4'd0, FETCH=4'd1, DECODE=4'd2,
         EXEC_ADD=4'd3, EXEC_STORE=4'd4, EXEC_STORE2=4'd5,
         EXEC_LOAD=4'd6, EXEC_JUMP=4'd7, EXEC_NOP=4'd8;
     reg [3:0] state;
+    assign state_out = state;
     initial begin state=RESET_PC; pc=0; ir=0; ac=0; end
 
     // O endereco da RAM e registrado internamente pelo altsyncram.

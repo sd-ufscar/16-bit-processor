@@ -9,8 +9,8 @@ module tb_manual;
     integer pulses=0, writes=0;
     always #10 clock=~clock;
     clock_control control(clock,key,sw,reset,enable,select_reg);
-    scomp cpu(clock,reset,enable,mdr,ac,ir,pc,mar,mw,mem_enable);
-    memory256 ram(clock,mem_enable,mw,mar,ac,mdr);
+    scomp cpu(.clock(clock),.reset(reset),.enable(enable),.mdr(mdr),.ac(ac),.ir(ir),.pc(pc),.mar(mar),.mw(mw),.mem_enable(mem_enable));
+    memory256 ram(.clock(clock),.mem_enable(mem_enable),.mw(mw),.mar(mar),.ac(ac),.mdr(mdr));
     always @(posedge clock) begin
         if (enable) pulses=pulses+1;
         if (mem_enable && mw) writes=writes+1;

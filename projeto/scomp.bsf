@@ -1,8 +1,8 @@
 (header "symbol" (version "1.1"))
 (symbol
-(rect 0 0 256 256)
+(rect 0 0 256 288)
 (text "scomp" (rect 8 0 43 13)(font "Arial" (font_size 10)))
-(text "inst" (rect 8 241 36 254)(font "Arial" (font_size 8)))
+(text "inst" (rect 8 273 36 286)(font "Arial" (font_size 8)))
 (port
 (pt 0 32)
 (input)
@@ -73,7 +73,14 @@
 (text "mem_enable" (rect 165 185 235 198)(font "Arial" (font_size 8)))
 (line (pt 256 192)(pt 240 192))
 )
+(port
+(pt 256 224)
+(output)
+(text "state_out[3..0]" (rect 0 0 105 13)(font "Arial" (font_size 8)))
+(text "state_out[3..0]" (rect 130 217 235 230)(font "Arial" (font_size 8)))
+(line (pt 256 224)(pt 240 224)(line_width 3))
+)
 (drawing
-(rectangle (rect 16 16 240 240))
+(rectangle (rect 16 16 240 272))
 )
 )

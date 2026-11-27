@@ -10,9 +10,10 @@ def line(a,b,w=1):
 # (port, largura, nome da rede), entrada e saida em ordem de cima para baixo.
 modules={
  'clock_control': ([("clock",1,"CLOCK_50"),("key",2,"KEY"),("sw",2,"SW[2..1]")],[("reset",1,"reset"),("enable",1,"enable"),("select_reg",2,"select_reg")]),
- 'scomp': ([("clock",1,"CLOCK_50"),("reset",1,"reset"),("enable",1,"enable"),("mdr",16,"mdr")],[("ac",16,"ac"),("ir",16,"ir"),("pc",8,"pc"),("mar",8,"mar"),("mw",1,"mw"),("mem_enable",1,"mem_enable")]),
- 'memory256': ([("clock",1,"CLOCK_50"),("mem_enable",1,"mem_enable"),("mw",1,"mw"),("mar",8,"mar"),("ac",16,"ac")],[("mdr",16,"mdr")]),
- 'display_interface': ([("ac",16,"ac"),("ir",16,"ir"),("pc",8,"pc"),("mar",8,"mar"),("mw",1,"mw"),("mdr",16,"mdr"),("select_reg",2,"select_reg")],[("HEX0",7,"HEX0"),("HEX1",7,"HEX1"),("HEX2",7,"HEX2"),("HEX3",7,"HEX3"),("LEDR",9,"LEDR")])}
+ 'scomp': ([("clock",1,"CLOCK_50"),("reset",1,"reset"),("enable",1,"enable"),("mdr",16,"mdr")],[("ac",16,"ac"),("ir",16,"ir"),("pc",8,"pc"),("mar",8,"mar"),("mw",1,"mw"),("mem_enable",1,"mem_enable"),("state_out",4,"state_out")]),
+ 'memory256': ([("clock",1,"CLOCK_50"),("mem_enable",1,"mem_enable"),("mw",1,"mw"),("mar",8,"mar"),("ac",16,"ac")],[("mdr",16,"mdr"),("debug_words",128,"debug_words"),("debug_valid",1,"debug_valid")]),
+ 'display_interface': ([("ac",16,"ac"),("ir",16,"ir"),("pc",8,"pc"),("mar",8,"mar"),("mw",1,"mw"),("mdr",16,"mdr"),("select_reg",2,"select_reg")],[("HEX0",7,"HEX0"),("HEX1",7,"HEX1"),("HEX2",7,"HEX2"),("HEX3",7,"HEX3"),("LEDR",9,"LEDR")]),
+ 'vga_datapath': ([("clock",1,"CLOCK_50"),("reset",1,"reset"),("enable",1,"enable"),("ac",16,"ac"),("ir",16,"ir"),("mdr",16,"mdr"),("pc",8,"pc"),("mar",8,"mar"),("mw",1,"mw"),("state_out",4,"state_out"),("debug_words",128,"debug_words"),("debug_valid",1,"debug_valid")],[("VGA_R",4,"VGA_R"),("VGA_G",4,"VGA_G"),("VGA_B",4,"VGA_B"),("VGA_HS",1,"VGA_HS"),("VGA_VS",1,"VGA_VS")])}
 W=256
 
 def symbol(module,inst,x,y):
@@ -30,8 +31,8 @@ for mod in modules:
     Path(mod+'.bsf').write_text('(header "symbol" (version "1.1"))\n'+symbol(mod,'inst',0,0)+'\n')
 
 b=['(header "graphic" (version "1.4"))']
-positions={'clock_control':(384,64),'memory256':(960,64),'scomp':(384,352),'display_interface':(960,352)}
-instances={'clock_control':'u_control','memory256':'u_ram','scomp':'u_cpu','display_interface':'u_display'}
+positions={'clock_control':(384,64),'memory256':(960,64),'scomp':(384,352),'display_interface':(960,352),'vga_datapath':(960,736)}
+instances={'clock_control':'u_control','memory256':'u_ram','scomp':'u_cpu','display_interface':'u_display','vga_datapath':'u_vga'}
 for mod,(x,y) in positions.items(): b.append(symbol(mod,instances[mod],x,y))
 
 # Nos nomeados interligam ramos sem cruzamentos. Barramentos com (bus).
@@ -62,7 +63,7 @@ for mod,(x,y) in positions.items():
         else: wire((x-144,yy),(x,yy),n,w)
     for i,(p,w,n) in enumerate(outs):
         yy=y+32+32*i; counts[(n,w)]+=1; drivers[(n,w)]+=1
-        if mod=='display_interface':
+        if mod in ('display_interface','vga_datapath'):
             pin('output',n,w,x+W+144,yy); wire((x+W,yy),(x+W+144,yy),n,w)
         elif mod=='scomp' and n in direct:
             assert positions['display_interface'][1]+32+32*i==yy
@@ -70,4 +71,4 @@ for mod,(x,y) in positions.items():
         else: wire((x+W,yy),(x+W+144,yy),n,w)
 assert all(v==1 for v in drivers.values()) and set(counts)==set(drivers)
 Path('de1_top.bdf').write_text('\n'.join(b)+'\n')
-print('BDF gerado: 4 simbolos, 8 pinos fisicos,',sum(1 for x in b if x.startswith('(connector')), 'conectores; redes com driver unico.')
+print('BDF gerado: 5 simbolos, 13 grupos de pinos,',sum(1 for x in b if x.startswith('(connector')), 'conectores; redes com driver unico.')
